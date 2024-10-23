@@ -2,7 +2,7 @@ import express, { Request, Response, ErrorRequestHandler } from 'express';
 import path from 'path';
 import dotenv from 'dotenv';
 import cors from 'cors';
-import apiRoutes from './routes/routes';
+import apiRoutes from './routes/api';
 
 dotenv.config();
 
