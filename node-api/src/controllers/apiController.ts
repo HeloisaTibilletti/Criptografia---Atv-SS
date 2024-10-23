@@ -10,31 +10,26 @@ const transporter = nodemailer.createTransport({
     host: 'sandbox.smtp.mailtrap.io',
     port: 2525,
     auth: {
-        user: '3c06f9dbdde467', // Substitua com suas credenciais do Mailtrap
+        user: '3c06f9dbdde467', 
         pass: 'b338ed92a62e61',
     },
 });
 
-// Chave secreta para JWT
-const JWT_SECRET = 'your-secret-key';
+const JWT_SECRET = '1234';
 
-// Função para gerar senha aleatória
 const generateRandomPassword = (): string => {
     return Math.random().toString(36).slice(-8); 
 };
 
-// Função para enviar um "ping" (para testes simples)
 export const ping = (req: Request, res: Response) => {
     res.json({ pong: true });
 };
 
-// Função de registro de usuários
 export const register = async (req: Request, res: Response) => {
     console.log('Iniciando processo de registro...');
 
     const { email, password, name, discipline } = req.body;
 
-    // Validação dos campos de entrada
     if (!email || !validator.isEmail(email)) {
         return res.status(400).json({ error: 'E-mail inválido ou não fornecido.' });
     }
@@ -52,7 +47,6 @@ export const register = async (req: Request, res: Response) => {
     }
 
     try {
-        // Verificar se o e-mail já está cadastrado
         console.log('Verificando se o usuário já existe...');
         let hasUser = await User.findOne({ where: { email } });
 
@@ -63,7 +57,6 @@ export const register = async (req: Request, res: Response) => {
 
         console.log('Criando novo usuário...');
 
-        // Criptografar a senha
         const saltRounds = 10;
         const hashedPassword = await bcrypt.hash(password, saltRounds);
 
@@ -76,14 +69,12 @@ export const register = async (req: Request, res: Response) => {
 
         console.log('Usuário cadastrado com sucesso:', { email, name, discipline });
 
-        // Gerar o token JWT
         const token = jwt.sign(
-            { id: newUser.id, email: newUser.email }, // Payload do token
-            JWT_SECRET, // Chave secreta
-            { expiresIn: '1h' } // Duração do token
+            { id: newUser.id, email: newUser.email }, 
+            JWT_SECRET,
+            { expiresIn: '1h' } 
         );
 
-        // Retornar o token e os dados do usuário (sem a senha)
         return res.status(201).json({
             message: 'Usuário cadastrado com sucesso.',
             token,
@@ -146,7 +137,7 @@ export const login = async (req: Request, res: Response) => {
     }
 };
 
-// Função para listar todos os usuários
+
 export const listAll = async (req: Request, res: Response) => {
     try {
         const users = await User.findAll();
@@ -157,7 +148,7 @@ export const listAll = async (req: Request, res: Response) => {
     }
 };
 
-// Função para recuperação de senha
+
 export const forgotPassword = async (req: Request, res: Response) => {
     const { email } = req.body;
 
@@ -166,26 +157,23 @@ export const forgotPassword = async (req: Request, res: Response) => {
     }
 
     try {
-        // Verificar se o usuário existe no banco de dados
+
         const hasUser = await User.findOne({ where: { email } });
 
         if (!hasUser) {
             return res.status(404).json({ error: 'Usuário não encontrado.' });
         }
 
-        // Gerar senha aleatória
         const randomPassword = generateRandomPassword();
         console.log('Senha gerada:', randomPassword);
 
-        // Criptografar a senha gerada
+
         const saltRounds = 10;
         const hashedPassword = await bcrypt.hash(randomPassword, saltRounds);
 
-        // Atualizar a senha no banco de dados
         hasUser.password = hashedPassword;
         await hasUser.save();
 
-        // Enviar a senha aleatória por e-mail
         const mailOptions = {
             from: 'no-reply@seu-dominio.com',
             to: email,
